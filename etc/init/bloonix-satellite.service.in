@@ -1,0 +1,17 @@
+[Unit]
+Description=Bloonix Satellite
+After=network.target
+
+[Service]
+Type=forking
+PIDFile=@@RUNDIR@@/bloonix/bloonix-satellite.pid
+ExecStartPre=@@USRLIBDIR@@/bloonix/bin/bloonix-pre-start @@LIBDIR@@/bloonix @@LIBDIR@@/bloonix/ipc @@LIBDIR@@/bloonix/satellite @@LOGDIR@@/bloonix @@RUNDIR@@/bloonix
+ExecStart=/usr/bin/bloonix-satellite --pid-file @@RUNDIR@@/bloonix/bloonix-satellite.pid --config-file @@CONFDIR@@/bloonix/satellite/main.conf
+ExecReload=/bin/kill -1 $MAINPID
+ExecStop=/bin/kill -15 $MAINPID
+PrivateTmp=true
+TimeoutStartSec=5
+TimeoutStopSec=30
+
+[Install]
+WantedBy=multi-user.target

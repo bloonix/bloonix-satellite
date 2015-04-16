@@ -1,0 +1,179 @@
+# Parameter: authkey
+#
+# This key is used for authentification. Only clients that can authentificate
+# with this key are allowed to execute checks over the satellite.
+
+authkey secret
+
+
+# Parameter: user
+# Parameter: group
+#
+# By default the server runs as user bloonix and with the group bloonix.
+# If you want that the daemon runs as another user and group just change
+# the both parameter. Take care that the logfiles can be written by the user.
+#
+# Default: bloonix
+
+user bloonix
+group bloonix
+
+
+# Parameter: plugins
+#
+# This parameter is used to configure the directory where the plugins are
+# installed. The agent will only execute plugins from this diretories.
+# It's possible to set a comma separated list of directories.
+#
+#    plugins /usr/lib/bloonix/plugins,/usr/local/lib/bloonix/plugins
+#
+# Default: /usr/local/lib/bloonix/plugins
+
+plugins @@PREFIX@@/lib/bloonix/plugins
+
+
+# Section: proc_manager
+#
+# This section is used to configure the parameter for the process
+# manager of bloonix.
+#
+# Parameter: min_spare_servers
+#
+# This parameter sets the desired minimum numbers of idle child processes.
+# If less than min_spare_servers processes are in idle state, then new
+# processes will be forked until the count of min_spare_servers is reached.
+#
+# Default: 10
+#
+# Parameter: max_spare_servers
+#
+# This parameter sets the desired maximum number of idle child processes.
+# If equal or more than max_spare_servers processes are in idle state,
+# then the excess processes will be killed.
+#
+# Default: 20
+#
+# Parameter: max_servers
+#
+# This parameter sets the absolute maximum number of child processes that
+# can be forked.
+#
+# Default: 50
+#
+# Parameter: max_requests
+#
+# This parameter sets how many requests a child process is allowed to
+# process. If the value of max_requests is reached then the process will
+# stop working and exit.
+#
+# Default: 0 (unlimited)
+#
+# Parameter: timeout
+#
+# This parameter sets the maximum execution time in seconds. After the
+# timeout the process is killed by the parent.
+#
+# Default: 300
+#
+# Parameter: lockfile
+#
+# With this parameter a filename is set that will be used for the inter-process
+# communication. If the shm-module is used then the file will be used to lock
+# and unlock for read and write operations against the shared memory segment.
+#
+# It's possible to use a placeholder for the pid + timestamp of the parent process: %P
+#
+# Default: /var/lib/bloonix/ipc/satellite.%P.lock
+
+proc_manager {
+    min_spare_servers 10
+    max_spare_servers 20
+    max_servers 30
+    timeout 30
+}
+
+
+# Section: tcp_server
+#
+# This section is used to configure the host and port on which the server is
+# listeing and waiting for request of the agents.
+#
+# Parameter: port
+#
+# The port number where to listen on.
+#
+# Default: 5464
+#
+# Parameter: use_ssl
+#
+# With this parameter it's possible to enable or disable ssl.
+#
+# Default: yes
+#
+# Parameter: ssl_key_file
+#
+# The path to the the ssl private key.
+#
+# Parameter: ssl_cert_file
+#
+# The path to the ssl certificate.
+
+tcp_server {
+    port 5464
+    use_ssl yes
+    ssl_key_file /etc/bloonix/satellite/pki/server.key
+    ssl_cert_file /etc/bloonix/satellite/pki/server.cert
+}
+
+
+# Section: server_status
+#
+# It's possible to request the status of the bloonix server.
+# In this section you can configure which clients are allowed
+# to request the server status.
+#
+# Parameter: enabled
+#
+# Enable or disable the server status functionality.
+#
+# Default: yes
+#
+# Parameter: allow_from
+#
+# Set a comma separated list of ip addresses.
+#
+# You can set "all" for all IPs, but you shouldn't do that.
+#
+# Default: 127.0.0.1
+#
+# Parameter: authkey
+#
+# You can use a authkey instead a IP address.
+#
+# Default: not set
+
+server_status {
+    enabled yes
+    allow_from 127.0.0.1
+}
+
+
+# Section: logger
+#
+# In this section the logging machine can be confgiured.
+# As logger the Perl module Log::Handler is used.
+#
+# See http://search.cpan.org/~bloonix/Log-Handler/
+# And http://search.cpan.org/~bloonix/Log-Handler/lib/Log/Handler/Examples.pod
+# Or the manpage: "man Log::Handler::Examples"
+
+logger {
+    file {
+        filename /var/log/bloonix/bloonix-satellite.log
+        filelock 0
+        maxlevel info
+        minlevel emerg
+        timeformat %b %d %Y %H:%M:%S
+        message_layout [%T] %L %P %t %m (%X) (%C)
+    }
+}

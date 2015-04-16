@@ -1,0 +1,26 @@
+#!/bin/sh
+
+if [ ! -e "/etc/bloonix/satellite/main.conf" ] ; then
+    echo "create /etc/bloonix/satellite/main.conf"
+    mkdir -p /etc/bloonix/satellite
+    chown root:root /etc/bloonix /etc/bloonix/satellite
+    chmod 755 /etc/bloonix /etc/bloonix/satellite
+    if [ -e "/usr/lib/bloonix/etc/satellite/main.conf" ] ; then
+        cp -a /usr/lib/bloonix/etc/satellite/main.conf /etc/bloonix/satellite/main.conf
+    else
+        cp -a /usr/local/lib/bloonix/etc/satellite/main.conf /etc/bloonix/satellite/main.conf
+    fi
+    chown root:bloonix /etc/bloonix/satellite/main.conf
+    chmod 640 /etc/bloonix/satellite/main.conf
+fi
+
+if [ ! -e "/etc/bloonix/satellite/pki" ] ; then
+    echo "create /etc/bloonix/satellite/pki/*"
+    mkdir -p /etc/bloonix/satellite/pki
+    chown root:bloonix /etc/bloonix/satellite/pki
+    chmod 750 /etc/bloonix/satellite/pki
+    openssl req -new -x509 -nodes -out /etc/bloonix/satellite/pki/server.cert -keyout /etc/bloonix/satellite/pki/server.key -batch
+    chown root:bloonix /etc/bloonix/satellite/pki/server.key /etc/bloonix/satellite/pki/server.cert
+    chmod 640 /etc/bloonix/satellite/pki/server.key /etc/bloonix/satellite/pki/server.cert
+fi
+

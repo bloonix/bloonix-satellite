@@ -1,0 +1,30 @@
+#!/bin/sh
+
+set -e
+WITH_SYSTEMD=0
+
+__configure() {
+    echo "Configure bloonix with systemd=$WITH_SYSTEMD"
+
+    if [ $WITH_SYSTEMD -eq 1 ] ; then
+        systemctl preset bloonix-satellite.service
+    else
+        update-rc.d bloonix-satellite defaults >/dev/null
+    fi
+}
+
+case "$1" in
+    configure) __configure ;;
+esac
+
+/usr/bin/bloonix-init-satellite
+
+echo "Starting (condrestart) bloonix-satellite..";
+
+if [ $WITH_SYSTEMD -eq 1 ] ; then
+    systemctl condrestart bloonix-satellite.service
+else
+    /etc/init.d/bloonix-satellite condrestart
+fi
+
+exit 0

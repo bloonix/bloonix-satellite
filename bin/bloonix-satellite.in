@@ -1,0 +1,378 @@
+#!@@PERL@@
+use strict;
+use warnings;
+use Bloonix::Config;
+use Bloonix::HangUp;
+use Bloonix::IO::SIPC;
+use Bloonix::IPC::Cmd;
+use Bloonix::ProcManager;
+use Getopt::Long qw(:config no_ignore_case);
+use JSON;
+use POSIX qw(:sys_wait_h getgid getuid setgid setuid);
+
+use Log::Handler;
+Log::Handler->create_logger("bloonix")->set_pattern("%X", "X", "n/a"); # client ip
+
+use base qw(Bloonix::Accessor);
+__PACKAGE__->mk_accessors(qw/config json log proc sipc/);
+
+sub run {
+    my $class = shift;
+    my $opts = $class->validate(@_);
+    my $self = bless { config => $opts }, $class;
+    $self->init;
+    $self->daemonize;
+}
+
+sub init {
+    my $self = shift;
+
+    $self->hang_up;
+    $self->create_logger;
+    $self->json(JSON->new);
+    $self->sipc(Bloonix::IO::SIPC->new($self->config->{tcp_server}));
+    $self->proc(Bloonix::ProcManager->new($self->config->{proc_manager}));
+}
+
+sub hang_up {
+    my $self = shift;
+
+    if (!-d "/var/run/bloonix") {
+        system("mkdir -p /var/run/bloonix");
+    }
+
+    Bloonix::HangUp->now(
+        user => $self->config->{user},
+        group => $self->config->{group},
+        pid_file => "/var/run/bloonix/bloonix-satellite.pid"
+    );
+}
+
+sub create_logger {
+    my $self = shift;
+
+    $self->log(Log::Handler->get_logger("bloonix"));
+    $self->log->set_default_param(die_on_errors => 0);
+    $self->log->config(config => $self->config->{logger});
+    $self->log->notice("logger initialized");
+}
+
+sub daemonize {
+    my $self = shift;
+
+    $self->log->notice("daemon initialized");
+
+    while (!$self->proc->done) {
+        eval {
+            while (!$self->proc->done) {
+                $self->process_request;
+            }
+        };
+    }
+}
+
+sub process_request {
+    my $self = shift;
+
+    $self->proc->set_status_waiting;
+    my $client = $self->sipc->accept or return;
+
+    $self->log->set_pattern("%X", "X", $client->sock->peerhost);
+    $self->log->notice("start processing request");
+    $self->proc->set_status_reading;
+    my $request = $client->recv;
+
+    if ($self->log->is_debug) {
+        $self->log->dump(debug => $request);
+    }
+
+    if (!$request || ref $request ne "HASH") {
+        $self->log->notice("invalid data, ignoring request");
+        $client->send({ status => "err", message => "access denied" });
+        return;
+    }
+
+    if (!$request->{action} || !$request->{authkey}) {
+        $self->log->notice("missing action/authkey");
+        $client->send({ status => "err", message => "access denied" });
+        return;
+    }
+
+    if ($request->{authkey} ne $self->config->{authkey}) {
+        $self->log->notice("access denied");
+        $client->send({ status => "err", message => "access denied" });
+        return;
+    }
+
+    if ($request->{action} eq "ping") {
+        $self->log->info("sending pong");
+        $client->send({ status => "ok", message => "pong" });
+        return;
+    }
+
+    if ($request->{action} ne "exec") {
+        $self->log->info("invalid request received");
+        return;
+    }
+
+    $self->proc->set_status_processing(
+        client => $client->sock->peerhost,
+        request => $request->{action}
+    );
+
+    if ($request->{action} eq "server-status") {
+        $self->log->notice("process server-status");
+        $self->process_server_status($client, $request);
+        return;
+    }
+
+    $self->log->notice("process request exec");
+    my $response;
+
+    eval {
+        local $SIG{__DIE__} = sub { alarm(0) };
+        local $SIG{ALRM} = sub { die "processing request runs on a timeout" };
+        alarm(60);
+        $response = $self->process_check($request->{data});
+        alarm(0);
+    };
+
+    if ($@) {
+        $self->log->error($@);
+    }
+
+    $self->proc->set_status_sending;
+    $client->send($response);
+}
+
+sub process_check {
+    my ($self, $request) = @_;
+    my ($command, $command_options, $timeout, $response);
+
+    if (!defined $request->{command}) {
+        return { status => "err", message => "missing mandatory param 'command'" };
+    }
+
+    if ($request->{command} !~ /^check-(dns|http|imap|pop3|smtp|tcp|udp|mtr|ping)\z/) {
+        return { status => "err", message => "invalid command" };
+    }
+
+    if ($request->{timeout} && $request->{timeout} =~ /^\d+\z/) {
+        $timeout = $request->{timeout};
+    } else {
+        $timeout = 30;
+    }
+
+    foreach my $dir (@{$self->config->{plugins}}) {
+        if (-f "$dir/$request->{command}") {
+            $command = "$dir/$request->{command} --stdin";
+            last;
+        }
+    }
+
+    if (!$command) {
+        return { status => "err", message => "command '$request->{command}' not found" };
+    }
+
+    if ($request->{command_options}) {
+        $command_options = $self->json->encode($request->{command_options});
+    } else {
+        $command_options = "{}";
+    }
+
+    $self->log->info("execute $command");
+    $self->log->debug($command_options);
+
+    my $ipc = Bloonix::IPC::Cmd->run(
+        command => $command,
+        to_stdin => $command_options,
+        timeout => $timeout,
+        kill_signal => 9
+    );
+
+    if ($ipc->timeout) {
+        $response = {
+            status => "CRITICAL",
+            message => $ipc->timeout,
+            tags => "timeout"
+        };
+    } elsif ($ipc->unknown) {
+        $response = {
+            status => "UNKNOWN",
+            message => $ipc->unknown
+        };
+    } else {
+        eval { $response = $self->json->decode(join("", @{$ipc->stdout})) };
+
+        if ($@) {
+            $response = {
+                status => "UNKNOWN",
+                message => "plugin output parser: unable to parse json output"
+            };
+        }
+    }
+
+    return { status => "ok", data => $response };
+}
+
+sub validate {
+    my $class = shift;
+
+    my %options = Params::Validate::validate(@_, {
+        configfile => {
+            type => Params::Validate::SCALAR,
+            default => "/etc/bloonix/satellite/main.conf"
+        },
+        pidfile => {
+            type => Params::Validate::SCALAR,
+            default => "/var/run/bloonix/bloonix-satellite.pid"
+        }
+    });
+
+    my $config = Bloonix::Config->parse($options{configfile});
+    $config = $class->validate_config($config);
+    $config->{pidfile} = $options{pidfile};
+    return $config;
+}
+
+sub process_server_status {
+    my ($self, $client, $request) = @_;
+
+    my $server_status = $self->config->{server_status};
+    my $allow_from = $server_status->{allow_from};
+    my $addr = $client->sock->peerhost;
+    my $authkey = $request->{authkey} || 0;
+    my $plain = $request->{plain} || 0;
+    my $pretty = $request->{pretty} || 0;
+
+    $self->proc->set_status_sending;
+
+    if ($allow_from->{all} || $allow_from->{$addr} || ($server_status->{authkey} && $server_status->{authkey} eq $authkey)) {
+        $self->log->info("server status request from $addr - access allowed");
+
+        if ($plain) {
+            $client->send({ status => "ok", data => $self->proc->get_plain_server_status, plain => 1 });
+        } else {
+            $client->send({ status => "ok", data => $self->proc->get_raw_server_status });
+        }
+    } else {
+        $client->send({ status => "err", message => "access denied" });
+    }
+}
+
+sub validate_config {
+    my $class = shift;
+
+    my %opts = Params::Validate::validate(@_, {
+        authkey => {
+            type => Params::Validate::SCALAR,
+            regex => qr/^.{30,}\z/
+        },
+        user => {
+            type => Params::Validate::SCALAR,
+            default => "bloonix"
+        },
+        group => {
+            type => Params::Validate::SCALAR,
+            default => "bloonix"
+        },
+        proc_manager => {
+            type => Params::Validate::HASHREF
+        } ,
+        tcp_server => {
+            type => Params::Validate::HASHREF
+        },
+        server_status => {
+            type => Params::Validate::HASHREF,
+            default => {
+                enabled => "no",
+                allow_from => "127.0.0.1"
+            }
+        },
+        plugins => {
+            type => Params::Validate::SCALAR,
+            default => "/usr/lib/bloonix/plugins"
+        },
+        logger => {
+            type => Params::Validate::HASHREF
+        }
+    });
+
+    $opts{server_status} = $class->validate_server_status($opts{server_status});
+    $class->validate_tcp_server($opts{tcp_server});
+    $class->validate_proc_manager($opts{proc_manager});
+    $opts{plugins} = [ split /,/, $opts{plugins} ];
+    s/^\s+// for @{$opts{plugins}};
+    s/\s+\z// for @{$opts{plugins}};
+
+    return \%opts;
+}
+
+sub validate_tcp_server {
+    my ($class, $opts) = @_;
+
+    if ($opts->{host}) {
+        $opts->{localaddr} = delete $opts->{host};
+    }
+
+    if ($opts->{port}) {
+        $opts->{localport} = delete $opts->{port};
+    } elsif (!$opts->{localport}) {
+        $opts->{localport} = 5464;
+    }
+
+    $opts->{auto_connect} = 1;
+    $opts->{listen} = 1;
+}
+
+sub validate_proc_manager {
+    my ($class, $opts) = @_;
+
+    if (!$opts->{lockfile}) {
+        $opts->{lockfile} = "/var/lib/bloonix/ipc/satellite.%P.lock";
+    }
+}
+
+sub validate_server_status {
+    my $class = shift;
+
+    my %opts = Params::Validate::validate(@_, {
+        enabled => {
+            type => Params::Validate::SCALAR,
+            default => "yes",
+            regex => qr/^(0|1|no|yes)\z/
+        },
+        allow_from => {
+            type => Params::Validate::SCALAR,
+            default => "127.0.0.1"
+        },
+        authkey => {
+            type => Params::Validate::SCALAR,
+            optional => 1
+        }
+    });
+
+    if ($opts{enabled} eq "no") {
+        $opts{enabled} = 0;
+    }
+
+    $opts{allow_from} =~ s/\s//g;
+    $opts{allow_from} = {
+        map { $_, 1 } split(/,/, $opts{allow_from})
+    };
+
+    return \%opts;
+}
+
+my $config = "/etc/bloonix/satellite/main.conf";
+my $pidfile = "/var/run/bloonix/bloonix-satellite.pid";
+
+GetOptions(
+    "c|config-file=s" => \$config,
+    "p|pid-file=s" => \$pidfile
+) or exit 1;
+
+__PACKAGE__->run(
+    configfile => $config,
+    pidfile => $pidfile
+);
