@@ -21,6 +21,7 @@ build:
 		sed -i "s!@@USRLIBDIR@@!$(USRLIBDIR)!" $$file; \
 		sed -i "s!@@SRVDIR@@!$(SRVDIR)!g" $$file; \
 		sed -i "s!@@LOGDIR@@!$(LOGDIR)!g" $$file; \
+		sed -i "s!@@LIBDIR@@!$(LIBDIR)!g" $$file; \
 	done;
 
 test:

@@ -1,3 +1,7 @@
+bloonix-satellite (0.2) released at 2015-04-19
+
+    * Fixed replacement of @@LIBDIR@@.
+
 bloonix-satellite (0.1) released at 2015-04-14
 
     * Initial release.
