@@ -13,6 +13,7 @@ my $o_cachedir         = "/var/cache";
 my $o_confdir          = "/etc";
 my $o_build_package    = 0;
 my $o_initdir          = "/etc/init.d";
+my $o_libdir           = "/var/lib";
 my $o_logdir           = "/var/log";
 my $o_rundir           = "/var/run";
 my $o_srvdir           = "/srv";
@@ -31,6 +32,7 @@ GetOptions(
     "cachedir=s"         => \$o_cachedir,
     "confdir=s"          => \$o_confdir,
     "initdir=s"          => \$o_initdir,
+    "libbir=s"           => \$o_libdir,
     "logdir=s"           => \$o_logdir,
     "rundir=s"           => \$o_rundir,
     "srvdir=s"           => \$o_srvdir,
@@ -54,6 +56,7 @@ if ($o_help) {
     print "  --confdir DIR (default: $o_confdir)\n";
     print "  --initdir DIR (default: $o_initdir)\n";
     print "  --logdir DIR (default: $o_logdir)\n";
+    print "  --libdir DIR (default: $o_libdir)\n";
     print "  --rundir DIR (default: $o_rundir)\n";
     print "  --srvdir DIR (default: $o_srvdir)\n";
     print "  --perl PERL EXECUTABLE (default: $o_perl)\n";
@@ -87,6 +90,7 @@ CACHEDIR=\$(DESTDIR)$o_cachedir
 CONFDIR=\$(DESTDIR)$o_confdir
 INITDIR=\$(DESTDIR)$o_initdir
 LOGDIR=\$(DESTDIR)$o_logdir
+LIBDIR=\$(DESTDIR)$o_libdir
 RUNDIR=\$(DESTDIR)$o_rundir
 SRVDIR=\$(DESTDIR)$o_srvdir
 USRLIBDIR=\$(DESTDIR)$o_prefix/lib

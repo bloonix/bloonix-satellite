@@ -2,8 +2,10 @@
 #
 # This key is used for authentification. Only clients that can authentificate
 # with this key are allowed to execute checks over the satellite.
+#
+# Minimal lenght: 30
 
-authkey secret
+authkey @@SECRET@@
 
 
 # Parameter: user
