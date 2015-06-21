@@ -1,6 +1,6 @@
 Summary: Bloonix satellite daemon
 Name: bloonix-satellite
-Version: 0.2
+Version: 0.3
 Release: 1%{dist}
 License: GPLv3
 Group: Utilities/System
@@ -110,6 +110,8 @@ rm -rf %{buildroot}
 %doc %attr(0444, root, root) %{docdir}/LICENSE
 
 %changelog
+* Sun Jun 21 2015 Jonny Schulz <js@bloonix.de> - 0.3-1
+- Added check-ftp to the list of allowed checks.
 * Sun Apr 19 2015 Jonny Schulz <js@bloonix.de> - 0.2-1
 - Fixed replacement of @@LIBDIR@@.
 * Wed Apr 15 2015 Jonny Schulz <js@bloonix.de> - 0.1-1

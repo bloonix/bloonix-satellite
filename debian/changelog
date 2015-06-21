@@ -1,3 +1,9 @@
+bloonix-satellite (0.3-1) unstable; urgency=low
+
+    * Added check-ftp to the list of allowed checks.
+
+ -- Jonny Schulz <js@bloonix.de>  Sun, 21 Jun 2015 08:45:18 +0200
+
 bloonix-satellite (0.2-1) unstable; urgency=low
 
     * Fixed replacement of @@LIBDIR@@.
