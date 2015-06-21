@@ -153,7 +153,7 @@ sub process_check {
         return { status => "err", message => "missing mandatory param 'command'" };
     }
 
-    if ($request->{command} !~ /^check-(dns|http|imap|pop3|smtp|tcp|udp|mtr|ping)\z/) {
+    if ($request->{command} !~ /^check-(dns|ftp|http|imap|pop3|smtp|tcp|udp|mtr|ping)\z/) {
         return { status => "err", message => "invalid command" };
     }
 
