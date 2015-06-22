@@ -34,6 +34,16 @@ group bloonix
 plugins @@PREFIX@@/lib/bloonix/plugins
 
 
+# Parameter: allowed_checks
+#
+# With this parameter it's possible to control the checks that can
+# be executed.
+#
+# Default: check-dns,check-ftp,check-http,check-imap,check-mtr,check-ping,ckeck-pop3,check-smtp,check-tcp,check-udp
+#
+#allowed_checks check-dns,check-ftp,check-http,check-imap,check-mtr,check-ping,ckeck-pop3,check-smtp,check-tcp,check-udp
+
+
 # Section: proc_manager
 #
 # This section is used to configure the parameter for the process

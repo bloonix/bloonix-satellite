@@ -148,12 +148,13 @@ sub process_request {
 sub process_check {
     my ($self, $request) = @_;
     my ($command, $command_options, $timeout, $response);
+    my $allowed_checks = $self->config->{allowed_checks};
 
     if (!defined $request->{command}) {
         return { status => "err", message => "missing mandatory param 'command'" };
     }
 
-    if ($request->{command} !~ /^check-(dns|ftp|http|imap|pop3|smtp|tcp|udp|mtr|ping)\z/) {
+    if (!exists $allowed_checks->{ $request->{command} }) {
         return { status => "err", message => "invalid command" };
     }
 
@@ -282,6 +283,10 @@ sub validate_config {
         tcp_server => {
             type => Params::Validate::HASHREF
         },
+        allowed_checks => {
+            type => Params::Validate::SCALAR | Params::Validate::ARRAYREF,
+            default => "check-dns,check-ftp,check-http,check-imap,check-mtr,check-ping,ckeck-pop3,check-smtp,check-tcp,check-udp"
+        },
         server_status => {
             type => Params::Validate::HASHREF,
             default => {
@@ -298,6 +303,12 @@ sub validate_config {
         }
     });
 
+    if (ref $opts{allowed_checks} eq "ARRAY") {
+        $opts{allowed_checks} = join(",", @{$opts{allowed_checks}});
+    }
+
+    $opts{allowed_checks} =~ s/\s//g;
+    $opts{allowed_checks} = { map { $_ => 1 } split(/,/, $opts{allowed_checks}) };
     $opts{server_status} = $class->validate_server_status($opts{server_status});
     $class->validate_tcp_server($opts{tcp_server});
     $class->validate_proc_manager($opts{proc_manager});
