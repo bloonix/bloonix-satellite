@@ -1,3 +1,7 @@
+bloonix-satellite (0.4) released at 2015-06-22
+
+    * Fixed typo ckeck-pop3 -> check-pop3.
+
 bloonix-satellite (0.3) released at 2015-06-21
 
     * Added check-ftp to the list of allowed checks.

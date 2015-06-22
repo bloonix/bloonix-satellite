@@ -285,7 +285,7 @@ sub validate_config {
         },
         allowed_checks => {
             type => Params::Validate::SCALAR | Params::Validate::ARRAYREF,
-            default => "check-dns,check-ftp,check-http,check-imap,check-mtr,check-ping,ckeck-pop3,check-smtp,check-tcp,check-udp"
+            default => "check-dns,check-ftp,check-http,check-imap,check-mtr,check-ping,check-pop3,check-smtp,check-tcp,check-udp"
         },
         server_status => {
             type => Params::Validate::HASHREF,
