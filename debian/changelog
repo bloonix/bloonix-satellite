@@ -1,3 +1,9 @@
+bloonix-satellite (0.4-1) unstable; urgency=low
+
+    * Fixed typo ckeck-pop3 -> check-pop3.
+
+ -- Jonny Schulz <js@bloonix.de>  Mon, 22 Jun 2015 20:48:08 +0200
+
 bloonix-satellite (0.3-1) unstable; urgency=low
 
     * Added check-ftp to the list of allowed checks.
