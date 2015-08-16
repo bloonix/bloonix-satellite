@@ -1,3 +1,9 @@
+bloonix-satellite (0.5-1) unstable; urgency=low
+
+    * Kicked dependency bloonix-agent.
+
+ -- Jonny Schulz <js@bloonix.de>  Sun, 16 Aug 2015 13:34:52 +0200
+
 bloonix-satellite (0.4-1) unstable; urgency=low
 
     * Fixed typo ckeck-pop3 -> check-pop3.

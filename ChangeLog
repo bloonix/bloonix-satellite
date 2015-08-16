@@ -1,3 +1,7 @@
+bloonix-satellite (0.5) released at 2015-08-16
+
+    * Kicked dependency bloonix-agent.
+
 bloonix-satellite (0.4) released at 2015-06-22
 
     * Fixed typo ckeck-pop3 -> check-pop3.
