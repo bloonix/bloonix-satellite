@@ -1,6 +1,6 @@
 Summary: Bloonix satellite daemon
 Name: bloonix-satellite
-Version: 0.5
+Version: 0.6
 Release: 1%{dist}
 License: GPLv3
 Group: Utilities/System
@@ -45,7 +45,7 @@ install -d -m 0750 ${RPM_BUILD_ROOT}%{rundir}
 install -c -m 0444 LICENSE ${RPM_BUILD_ROOT}%{docdir}/
 install -c -m 0444 ChangeLog ${RPM_BUILD_ROOT}%{docdir}/
 
-%if %{?with_systemd}
+%if 0%{?with_systemd}
 install -p -D -m 0644 %{buildroot}%{blxdir}/etc/systemd/bloonix-satellite.service %{buildroot}%{_unitdir}/bloonix-satellite.service
 %else
 install -p -D -m 0755 %{buildroot}%{blxdir}/etc/init.d/bloonix-satellite %{buildroot}%{initdir}/bloonix-satellite
@@ -58,8 +58,8 @@ getent passwd bloonix >/dev/null || /usr/sbin/useradd \
 
 %post
 /usr/bin/bloonix-init-satellite
-%if %{?with_systemd}
-systemctl preset bloonix-satellite.service
+%if 0%{?with_systemd}
+%systemd_post bloonix-satellite.service
 systemctl condrestart bloonix-satellite.service
 %else
 /sbin/chkconfig --add bloonix-satellite
@@ -67,16 +67,19 @@ systemctl condrestart bloonix-satellite.service
 %endif
 
 %preun
-if [ $1 -eq 0 ]; then
-%if %{?with_systemd}
-systemctl --no-reload disable bloonix-satellite.service
-systemctl stop bloonix-satellite.service
-systemctl daemon-reload
+%if 0%{?with_systemd}
+%systemd_preun bloonix-satellite.service
 %else
-/sbin/service bloonix-satellite stop &>/dev/null || :
-/sbin/chkconfig --del bloonix-satellite
-%endif
+if [ $1 -eq 0 ]; then
+    /sbin/service bloonix-satellite stop &>/dev/null || :
+    /sbin/chkconfig --del bloonix-satellite
 fi
+%endif
+
+%postun
+%if 0%{?with_systemd}
+%systemd_postun
+%endif
 
 %clean
 rm -rf %{buildroot}
@@ -98,7 +101,7 @@ rm -rf %{buildroot}
 %{_bindir}/bloonix-satellite
 %{_bindir}/bloonix-init-satellite
 
-%if %{?with_systemd} == 1
+%if 0%{?with_systemd}
 %{_unitdir}/bloonix-satellite.service
 %else
 %{initdir}/bloonix-satellite
@@ -109,6 +112,8 @@ rm -rf %{buildroot}
 %doc %attr(0444, root, root) %{docdir}/LICENSE
 
 %changelog
+* Tue Aug 18 2015 Jonny Schulz <js@bloonix.de> - 0.6-1
+  Fixed %preun section in spec file.
 * Sun Aug 16 2015 Jonny Schulz <js@bloonix.de> - 0.5-1
 - Kicked dependency bloonix-agent.
 * Mon Jun 22 2015 Jonny Schulz <js@bloonix.de> - 0.4-1
