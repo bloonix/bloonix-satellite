@@ -108,7 +108,8 @@ rm -rf %{buildroot}
 
 %changelog
 * Tue Aug 18 2015 Jonny Schulz <js@bloonix.de> - 0.6-1
-  Fixed %preun section in spec file.
+- Fixed %preun section in spec file.
+- Moved the creation of user bloonix into the core package.
 * Sun Aug 16 2015 Jonny Schulz <js@bloonix.de> - 0.5-1
 - Kicked dependency bloonix-agent.
 * Mon Jun 22 2015 Jonny Schulz <js@bloonix.de> - 0.4-1
