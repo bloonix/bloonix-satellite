@@ -51,11 +51,6 @@ install -p -D -m 0644 %{buildroot}%{blxdir}/etc/systemd/bloonix-satellite.servic
 install -p -D -m 0755 %{buildroot}%{blxdir}/etc/init.d/bloonix-satellite %{buildroot}%{initdir}/bloonix-satellite
 %endif
 
-%pre
-getent group bloonix >/dev/null || /usr/sbin/groupadd bloonix
-getent passwd bloonix >/dev/null || /usr/sbin/useradd \
-    bloonix -g bloonix -s /sbin/nologin -d /var/run/bloonix -r
-
 %post
 /usr/bin/bloonix-init-satellite
 %if 0%{?with_systemd}
