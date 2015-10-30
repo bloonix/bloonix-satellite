@@ -1,3 +1,7 @@
+bloonix-satellite (0.7) released at 2015-XX-XX
+
+    * Fixed dependency to bloonix agent.
+
 bloonix-satellite (0.6) released at 2015-08-18
 
     * Fixed %preun section in spec file.

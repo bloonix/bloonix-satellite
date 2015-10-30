@@ -56,7 +56,7 @@ install:
 	./install-sh -c -m 0755 etc/init/bloonix-satellite.service $(USRLIBDIR)/bloonix/etc/systemd/bloonix-satellite.service;
 
 	if test -d /usr/lib/systemd/system ; then \
-		./install-sh -c -m 0644 etc/init/bloonix-satellite.service /usr/lib/systemd/system/; \
+		./install-sh -c -m 0644 etc/init/bloonix-satellite.service $(DESTDIR)/usr/lib/systemd/system/; \
 	elif test -d /etc/init.d ; then \
 		./install-sh -c -m 0755 etc/init/bloonix-satellite $(INITDIR)/bloonix-satellite; \
 	fi;
