@@ -1,3 +1,9 @@
+bloonix-satellite (0.7-1) unstable; urgency=low
+
+    * Fixed dependency to bloonix agent.
+
+ -- Jonny Schulz <js@bloonix.de>  Mon, 16 Nov 2015 13:20:32 +0100
+
 bloonix-satellite (0.6-1) unstable; urgency=low
 
     * Fixed %preun section in spec file.

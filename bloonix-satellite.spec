@@ -1,6 +1,6 @@
 Summary: Bloonix satellite daemon
 Name: bloonix-satellite
-Version: 0.6
+Version: 0.7
 Release: 1%{dist}
 License: GPLv3
 Group: Utilities/System
@@ -108,6 +108,8 @@ rm -rf %{buildroot}
 %doc %attr(0444, root, root) %{docdir}/LICENSE
 
 %changelog
+* Mon Nov 16 2015 Jonny Schulz <js@bloonix.de> - 0.7-1
+- Fixed dependency to bloonix agent.
 * Tue Aug 18 2015 Jonny Schulz <js@bloonix.de> - 0.6-1
 - Fixed %preun section in spec file.
 - Moved the creation of user bloonix into the core package.
