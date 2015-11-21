@@ -55,7 +55,7 @@ install:
 	./install-sh -d -m 0755 $(USRLIBDIR)/bloonix/etc/systemd;
 	./install-sh -c -m 0755 etc/init/bloonix-satellite.service $(USRLIBDIR)/bloonix/etc/systemd/bloonix-satellite.service;
 
-	if test -d /usr/lib/systemd/system ; then \
+	if test -d /usr/lib/systemd ; then \
 		./install-sh -d -m 0755 $(DESTDIR)/usr/lib/systemd/system/; \
 		./install-sh -c -m 0644 etc/init/bloonix-satellite.service $(DESTDIR)/usr/lib/systemd/system/; \
 	elif test -d /etc/init.d ; then \
@@ -65,6 +65,9 @@ install:
 	if test "$(BUILDPKG)" = "0" ; then \
 		if test ! -e "$(CONFDIR)/bloonix/satellite/main.conf" ; then \
 			./install-sh -c -m 0640 -o root -g $(GROUPNAME) etc/bloonix/satellite/main.conf $(CONFDIR)/bloonix/satellite/main.conf; \
+		fi; \
+		if test -d /usr/lib/systemd ; then \
+			systemctl daemon-reload; \
 		fi; \
 	fi;
 
