@@ -248,7 +248,8 @@ sub process_server_status {
 
     $self->proc->set_status_sending;
 
-    if ($allow_from->{all} || $allow_from->{$addr} || ($server_status->{authkey} && $server_status->{authkey} eq $authkey)) {
+    if ($allow_from->{all} || $allow_from->{$addr} ||
+            ($server_status->{authkey} && $server_status->{authkey} eq $authkey)) {
         $self->log->info("server status request from $addr - access allowed");
 
         if ($plain) {
@@ -285,7 +286,11 @@ sub validate_config {
         },
         allowed_checks => {
             type => Params::Validate::SCALAR | Params::Validate::ARRAYREF,
-            default => "check-dns,check-ftp,check-http,check-imap,check-mtr,check-ping,check-pop3,check-smtp,check-tcp,check-udp"
+            default => join(",",
+                "check-dns", "check-ftp", "check-http",
+                "check-imap", "check-mtr", "check-ping",
+                "check-pop3", "check-smtp", "check-tcp",
+                "check-udp"
         },
         server_status => {
             type => Params::Validate::HASHREF,
