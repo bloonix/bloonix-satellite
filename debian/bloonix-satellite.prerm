@@ -2,25 +2,23 @@
 
 set -e
 
-WITH_SYSTEMD=0
+if [ "$1" = "remove" ] ; then
+    echo "Removing bloonix-satellite.."
 
-__remove() {
-    if [ $WITH_SYSTEMD -eq 1 ] ; then
-        echo "Removing bloonix-satellite.."
+    if [ -e "/lib/systemd" ] ; then
         systemctl --no-reload disable bloonix-satellite.service
-        echo "Stopping (force) bloonix-satellite.."
+        echo "Stopping bloonix-satellite.."
         systemctl stop bloonix-satellite.service
         systemctl daemon-reload
     else
-        echo "Removing bloonix-satellite.."
         update-rc.d -f bloonix-satellite remove >/dev/null
-        echo "Stopping (force) bloonix-satellite.."
-        /etc/init.d/bloonix-satellite stop
+        echo "Stopping bloonix-satellite.."
+        if [ -e "/usr/share/upstart" ] ; then
+            service bloonix-satellite stop
+        else
+            /etc/init.d/bloonix-satellite stop
+        fi
     fi
-}
-
-case "$1" in
-    remove) __remove ;;
-esac
+fi
 
 exit 0

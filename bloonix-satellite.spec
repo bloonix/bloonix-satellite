@@ -1,6 +1,6 @@
 Summary: Bloonix satellite daemon
 Name: bloonix-satellite
-Version: 0.7
+Version: 0.8
 Release: 1%{dist}
 License: GPLv3
 Group: Utilities/System
@@ -42,7 +42,7 @@ rm -rf %{buildroot}
 %{__make} install DESTDIR=%{buildroot}
 mkdir -p ${RPM_BUILD_ROOT}%{docdir}
 install -d -m 0750 ${RPM_BUILD_ROOT}%{logdir}
-install -d -m 0750 ${RPM_BUILD_ROOT}%{rundir}
+install -d -m 0755 ${RPM_BUILD_ROOT}%{rundir}
 install -c -m 0444 LICENSE ${RPM_BUILD_ROOT}%{docdir}/
 install -c -m 0444 ChangeLog ${RPM_BUILD_ROOT}%{docdir}/
 
@@ -91,8 +91,8 @@ rm -rf %{buildroot}
 %{blxdir}/etc/systemd/bloonix-satellite.service
 %dir %attr(0755, root, root) %{blxdir}/etc/init.d
 %{blxdir}/etc/init.d/bloonix-satellite
-%dir %attr(0750, bloonix, bloonix) %{logdir}
-%dir %attr(0750, bloonix, bloonix) %{rundir}
+%dir %attr(0750, bloonix, root) %{logdir}
+%dir %attr(0755, bloonix, root) %{rundir}
 
 %{_bindir}/bloonix-satellite
 %{_bindir}/bloonix-init-satellite
@@ -108,6 +108,8 @@ rm -rf %{buildroot}
 %doc %attr(0444, root, root) %{docdir}/LICENSE
 
 %changelog
+* Mon Mar 28 2016 Jonny Schulz <js@bloonix.de> - 0.8-1
+- Fixed systemd/sysvinit/upstart installation routines.
 * Mon Nov 16 2015 Jonny Schulz <js@bloonix.de> - 0.7-1
 - Fixed dependency to bloonix agent.
 * Tue Aug 18 2015 Jonny Schulz <js@bloonix.de> - 0.6-1

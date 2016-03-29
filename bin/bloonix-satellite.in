@@ -291,6 +291,7 @@ sub validate_config {
                 "check-imap", "check-mtr", "check-ping",
                 "check-pop3", "check-smtp", "check-tcp",
                 "check-udp"
+            )
         },
         server_status => {
             type => Params::Validate::HASHREF,

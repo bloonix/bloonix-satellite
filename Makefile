@@ -28,16 +28,15 @@ test:
 
 install:
 
-	# Base Bloonix directories
-	for d in $(CACHEDIR) $(LOGDIR) $(RUNDIR) ; do \
-		./install-sh -d -m 0750 -o $(USERNAME) -g $(GROUPNAME) $$d/bloonix; \
-	done;
-
+	./install-sh -d -m 0750 $(LOGDIR)/bloonix;
+	./install-sh -d -m 0755 $(LIBDIR)/bloonix;
+	./install-sh -d -m 0755 $(RUNDIR)/bloonix;
+	./install-sh -d -m 0755 $(USRLIBDIR)/bloonix;
 	./install-sh -d -m 0755 $(PREFIX)/bin;
-	./install-sh -d -m 0755 -o root -g $(GROUPNAME) $(SRVDIR)/bloonix;
-	./install-sh -d -m 0755 -o root -g $(GROUPNAME) $(SRVDIR)/bloonix/satellite;
-	./install-sh -d -m 0755 -o root -g root $(CONFDIR)/bloonix;
-	./install-sh -d -m 0755 -o root -g root $(CONFDIR)/bloonix/satellite;
+	./install-sh -d -m 0755 $(SRVDIR)/bloonix;
+	./install-sh -d -m 0755 $(SRVDIR)/bloonix/satellite;
+	./install-sh -d -m 0755 $(CONFDIR)/bloonix;
+	./install-sh -d -m 0755 $(CONFDIR)/bloonix/satellite;
 
 	for file in \
 		bloonix-satellite \
@@ -55,19 +54,13 @@ install:
 	./install-sh -d -m 0755 $(USRLIBDIR)/bloonix/etc/systemd;
 	./install-sh -c -m 0755 etc/init/bloonix-satellite.service $(USRLIBDIR)/bloonix/etc/systemd/bloonix-satellite.service;
 
-	if test -d /usr/lib/systemd ; then \
-		./install-sh -d -m 0755 $(DESTDIR)/usr/lib/systemd/system/; \
-		./install-sh -c -m 0644 etc/init/bloonix-satellite.service $(DESTDIR)/usr/lib/systemd/system/; \
-	elif test -d /etc/init.d ; then \
-		./install-sh -c -m 0755 etc/init/bloonix-satellite $(INITDIR)/bloonix-satellite; \
-	fi;
-
 	if test "$(BUILDPKG)" = "0" ; then \
-		if test ! -e "$(CONFDIR)/bloonix/satellite/main.conf" ; then \
-			./install-sh -c -m 0640 -o root -g $(GROUPNAME) etc/bloonix/satellite/main.conf $(CONFDIR)/bloonix/satellite/main.conf; \
-		fi; \
 		if test -d /usr/lib/systemd ; then \
+			./install-sh -d -m 0755 $(DESTDIR)/usr/lib/systemd/system/; \
+			./install-sh -c -m 0644 etc/init/bloonix-satellite.service $(DESTDIR)/usr/lib/systemd/system/; \
 			systemctl daemon-reload; \
+		elif test -d /etc/init.d ; then \
+			./install-sh -c -m 0755 etc/init/bloonix-satellite $(INITDIR)/bloonix-satellite; \
 		fi; \
 	fi;
 

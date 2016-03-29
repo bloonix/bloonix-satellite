@@ -1,3 +1,7 @@
+bloonix-satellite (0.8) released at 2016-03-28
+
+    * Fixed systemd/sysvinit/upstart installation routines.
+
 bloonix-satellite (0.7) released at 2015-11-15
 
     * Fixed dependency to bloonix agent.
