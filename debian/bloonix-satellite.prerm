@@ -5,7 +5,7 @@ set -e
 if [ "$1" = "remove" ] ; then
     echo "Removing bloonix-satellite.."
 
-    if [ -e "/lib/systemd" ] ; then
+    if [ -e "/usr/lib/systemd" ] ; then
         systemctl --no-reload disable bloonix-satellite.service
         echo "Stopping bloonix-satellite.."
         systemctl stop bloonix-satellite.service

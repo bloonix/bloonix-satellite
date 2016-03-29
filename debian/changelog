@@ -1,3 +1,9 @@
+bloonix-satellite (0.9-1) unstable; urgency=low
+
+    * Fixed systemctl errors.
+
+ -- Jonny Schulz <js@bloonix.de>  Tue, 29 Mar 2016 12:36:32 +0200
+
 bloonix-satellite (0.8-1) unstable; urgency=low
 
     * Fixed systemd/sysvinit/upstart installation routines.
