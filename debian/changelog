@@ -1,3 +1,16 @@
+bloonix-satellite (0.11-1) unstable; urgency=low
+
+    * Force the timeout to 30s if the timeout is higher than 30s.
+
+ -- Jonny Schulz <js@bloonix.de>  Sun, 24 Apr 2016 00:06:30 +0200
+
+bloonix-satellite (0.10-1) unstable; urgency=low
+
+    * Check /bin/systemctl instead of /usr/lib/systemd to
+      determine if systemd is used.
+
+ -- Jonny Schulz <js@bloonix.de>  Mon, 04 Apr 2016 01:44:30 +0200
+
 bloonix-satellite (0.9-1) unstable; urgency=low
 
     * Fixed systemctl errors.

@@ -26,7 +26,8 @@ $io->send({
         command_options => {
             host => "127.0.0.1",
             warning => "5000,33%",
-            timeout => "8000,66%"
+            critical => "8000,66%",
+            timeout => 10
         }
     }
 });

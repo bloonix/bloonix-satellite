@@ -1,3 +1,12 @@
+bloonix-satellite (0.11) released at 2016-04-24
+
+    * Force the timeout to 30s if the timeout is higher than 30s.
+
+bloonix-satellite (0.10) released at 2016-04-04
+
+    * Check /bin/systemctl instead of /usr/lib/systemd to
+      determine if systemd is used.
+
 bloonix-satellite (0.9) released at 2016-03-29
 
     * Fixed systemctl errors.

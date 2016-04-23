@@ -82,36 +82,38 @@ sub process_request {
     $self->proc->set_status_reading;
     my $request = $client->recv;
 
+    $self->log->info("process request");
+
     if ($self->log->is_debug) {
         $self->log->dump(debug => $request);
     }
 
     if (!$request || ref $request ne "HASH") {
-        $self->log->notice("invalid data, ignoring request");
+        $self->log->warning("invalid data, ignoring request");
         $client->send({ status => "err", message => "access denied" });
         return;
     }
 
     if (!$request->{action} || !$request->{authkey}) {
-        $self->log->notice("missing action/authkey");
+        $self->log->warning("missing action/authkey");
         $client->send({ status => "err", message => "access denied" });
         return;
     }
 
     if ($request->{authkey} ne $self->config->{authkey}) {
-        $self->log->notice("access denied");
+        $self->log->warning("access denied");
         $client->send({ status => "err", message => "access denied" });
         return;
     }
 
     if ($request->{action} eq "ping") {
-        $self->log->info("sending pong");
+        $self->log->notice("sending pong");
         $client->send({ status => "ok", message => "pong" });
         return;
     }
 
     if ($request->{action} ne "exec") {
-        $self->log->info("invalid request received");
+        $self->log->warning("invalid request received");
         return;
     }
 
@@ -126,7 +128,7 @@ sub process_request {
         return;
     }
 
-    $self->log->notice("process request exec");
+    $self->log->info("process request exec");
     my $response;
 
     eval {
@@ -141,8 +143,10 @@ sub process_request {
         $self->log->error($@);
     }
 
+    $self->log->info("sending data");
     $self->proc->set_status_sending;
     $client->send($response);
+    $self->log->notice("request finished");
 }
 
 sub process_check {
@@ -158,7 +162,7 @@ sub process_check {
         return { status => "err", message => "invalid command" };
     }
 
-    if ($request->{timeout} && $request->{timeout} =~ /^\d+\z/) {
+    if ($request->{timeout} && $request->{timeout} =~ /^\d+\z/ && $request->{timeout} <= 30) {
         $timeout = $request->{timeout};
     } else {
         $timeout = 30;
@@ -290,7 +294,7 @@ sub validate_config {
                 "check-dns", "check-ftp", "check-http",
                 "check-imap", "check-mtr", "check-ping",
                 "check-pop3", "check-smtp", "check-tcp",
-                "check-udp"
+                "check-udp", "check-test"
             )
         },
         server_status => {
